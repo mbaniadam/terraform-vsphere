@@ -33,10 +33,10 @@ data "vsphere_datastore" "datastore" {
 data "vsphere_resource_pool" "pool" {}
 
 # // for existing port-groups
-# data "vsphere_network" "vm_vlan" {
-#   name          = "VM Network"
-#   datacenter_id = data.vsphere_datacenter.dc.id
-# }
+data "vsphere_network" "vm_vlan" {
+  name          = var.vm_vlan
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
 
 
 data "vsphere_host" "host" {
@@ -44,34 +44,34 @@ data "vsphere_host" "host" {
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-// Create Virtual Switch
-resource "vsphere_host_virtual_switch" "host_vswitch" {
-  name           = var.vswitch_name
-  host_system_id = data.vsphere_host.host.id
+# // Create Virtual Switch
+# resource "vsphere_host_virtual_switch" "host_vswitch" {
+#   name           = var.vswitch_name
+#   host_system_id = data.vsphere_host.host.id
 
-  network_adapters = ["", ""]
+#   network_adapters = ["", ""]
 
-  active_nics    = [""]
-  standby_nics   = [""]
-  teaming_policy = "failover_explicit"
+#   active_nics    = [""]
+#   standby_nics   = [""]
+#   teaming_policy = "failover_explicit"
 
-  allow_promiscuous      = false
-  allow_forged_transmits = false
-  allow_mac_changes      = false
+#   allow_promiscuous      = false
+#   allow_forged_transmits = false
+#   allow_mac_changes      = false
 
-  shaping_enabled           = true
-  shaping_average_bandwidth = 50000000
-  shaping_peak_bandwidth    = 100000000
-  shaping_burst_size        = 1000000000
-}
+#   shaping_enabled           = true
+#   shaping_average_bandwidth = 50000000
+#   shaping_peak_bandwidth    = 100000000
+#   shaping_burst_size        = 1000000000
+# }
 
 
-// Create Port-group 
-resource "vsphere_host_port_group" "pg" {
-  name                = var.vm_vlan
-  host_system_id      = data.vsphere_host.host.id
-  virtual_switch_name = vsphere_host_virtual_switch.host_vswitch.name
-}
+# // Create Port-group 
+# resource "vsphere_host_port_group" "pg" {
+#   name                = var.vm_vlan
+#   host_system_id      = data.vsphere_host.host.id
+#   virtual_switch_name = vsphere_host_virtual_switch.host_vswitch.name
+# }
 
 
 // Create Virtual Machine
@@ -88,7 +88,7 @@ resource "vsphere_virtual_machine" "vm" {
   guest_id          = var.guest_id
   nested_hv_enabled = true
   network_interface {
-    network_id   = vsphere_host_port_group.pg.id
+    network_id   = data.vsphere_network.vm_vlan.id
     adapter_type = var.adapter_type
   }
 
@@ -97,7 +97,7 @@ resource "vsphere_virtual_machine" "vm" {
     size  = var.vm_disksize
   }
   depends_on = [
-    vsphere_host_virtual_switch.host_vswitch,
-    vsphere_host_port_group.pg
+    # vsphere_host_virtual_switch.host_vswitch
+    data.vsphere_network.vm_vlan
   ]
 }
