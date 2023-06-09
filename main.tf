@@ -93,40 +93,7 @@ resource "vsphere_virtual_machine" "vm" {
   }
   cdrom {
     datastore_id = data.vsphere_datastore.datastore.id
-    path = "iso/ubuntu-22.04.2-live-server-amd64.iso"
-  }
-  disk {
-    label = "vm"
-    size  = var.vm_disksize
-  }
-  depends_on = [
-    # vsphere_host_virtual_switch.host_vswitch
-    data.vsphere_network.vm_vlan
-  ]
-}
-
-
-
-// Create Virtual Machine
-resource "vsphere_virtual_machine" "vm_worker" {
-  name                       = "${var.vm_name}-worker-${count.index+1}"
-  resource_pool_id           = data.vsphere_resource_pool.pool.id
-  datastore_id               = data.vsphere_datastore.datastore.id
-  count                      = var.vm_count
-  num_cpus                   = var.vm_cpu
-  memory                     = var.vm_ram
-  wait_for_guest_net_timeout = 0
-  // For more information about guest id in vmware >>>
-  // https://docs.vmware.com/en/VMware-HCX/4.6/hcx-user-guide/GUID-D4FFCBD6-9FEC-44E5-9E26-1BD0A2A81389.html
-  guest_id          = var.guest_id
-  nested_hv_enabled = true
-  network_interface {
-    network_id   = data.vsphere_network.vm_vlan.id
-    adapter_type = var.adapter_type
-  }
-  cdrom {
-    datastore_id = data.vsphere_datastore.datastore.id
-    path = "iso/ubuntu-22.04.2-live-server-amd64.iso"
+    path = var.vm_cdrom_path
   }
   disk {
     label = "vm"

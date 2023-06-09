@@ -103,3 +103,7 @@ variable "vswitch_name" {
   description = "vswitch name"
 }
 
+variable "vm_cdrom_path" {
+  description = "the path to the iso file. required for using datastore iso it has conflict with: client device"
+}
+
